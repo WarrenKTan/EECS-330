@@ -97,6 +97,7 @@ class MyLinkedList
         const_iterator& operator-- ()
         {
             current = current->prev;
+            return *this;
         }
 
         // move to the previous data element
@@ -238,22 +239,22 @@ class MyLinkedList
     // iterator interface
     iterator begin()
     { 
-        return head->next;
+        return iterator(head->next);
     }
 
     const_iterator begin() const
     { 
-        return head->next;
+        return const_iterator(head->next);
     }
   
     iterator end()
     { 
-        return tail;
+        return iterator(tail);
     }
 
     const_iterator end() const
     { 
-        return tail; 
+        return const_iterator(tail);
     }
   
     // gets the size of the linked list
@@ -318,6 +319,9 @@ class MyLinkedList
     // delete the data element pointed by itr; return the iterator pointing to the data element next to the one being deleted
     iterator erase(iterator itr)
     {
+        if (itr.current == nullptr || itr.current == tail)
+            return end();
+
         Node *p = itr.current;
         iterator retVal{p->next};
         p->prev->next = p->next;
@@ -375,22 +379,32 @@ class MyLinkedList
     // reverse the entire linked list
     void reverseList()
     {
-        for(iterator it = begin(); it != end(); it++){
-            Node *p = it.current;
-            Node *q = p->prev;
-
-            p->prev = p->next;
-            p->next = q;
+        Node* p = head;
+        while (p != nullptr)
+        {
+            std::swap(p->prev, p->next);
+            p = p->prev; 
         }
-
+        
         std::swap(head, tail);
     }
  
     // append a linked list to the end of the current one
     MyLinkedList<DataType>& appendList(MyLinkedList<DataType>&& rlist) 
     {
-        end().current->next = rlist.begin().current;
-        theSize = size() + rlist.size();
+        if (rlist.empty())
+            return *this;
+    
+        tail->prev->next = rlist.head->next;
+        rlist.head->next->prev = tail->prev;
+    
+        tail = rlist.tail;
+        theSize += rlist.theSize;
+    
+        rlist.head = nullptr;
+        rlist.tail = nullptr;
+        rlist.theSize = 0;
+    
         return *this;
     }
 
@@ -398,16 +412,24 @@ class MyLinkedList
     // return false if the next data element does not exist; true otherwise
     bool swapAdjElements(iterator& itr)
     {
-        if (itr.current->next == nullptr)
-            return false;
+        if (itr.current == nullptr || itr.current->next == tail) 
+        return false;
 
-        Node *p = itr.current;
-        Node *q = p->next;
-        
-        p->next = q->next;
-        q->prev = p->prev;
-        p->prev = q;
+        Node* p = itr.current;
+        Node* q = p->next;
+        Node* beforeP = p->prev;
+        Node* afterQ = q->next;
+
+        beforeP->next = q;
+        q->prev = beforeP;
+
         q->next = p;
+        p->prev = q;
+
+        p->next = afterQ;
+        afterQ->prev = p;
+
+        itr = iterator(q);
 
         return true;
     }
