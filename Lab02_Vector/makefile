@@ -1,35 +1,49 @@
-# Compiler
-CXX = g++
-# Compiler flags
-CXXFLAGS = -std=c++11
 # Executable name
-TARGET = Lab2
-# Source file
-SRC = MainTest.cpp
-# Input and output files
-INPUT = ./Inputs/input_$(ID).txt
-RESULT = result_$(ID).txt
-EXPECTED_OUTPUT = ./Outputs/output_$(ID).txt
+TARGET = Lab5
 # Python grading script
-GRADER = python3 GradingScript.py
+GRADER = GradingScript.py
 # Default ID
-ID ?= 0
+ID ?= Personal
 
-# Default rule: Compile the program
-all: $(TARGET)
+# Default rule
+all: test
 
 # Rule to build the executable
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
+$(TARGET): MainTest.cpp
+	@echo
+	@echo Compiling...
+	@g++ -std=c++11 MainTest.cpp -o $(TARGET)
+	@echo
 
 # Rule to run the program
 run: $(TARGET)
-	./$(TARGET) $(INPUT) >$(RESULT)
+	@echo
+	@echo Running Program...
+	@./$(TARGET) ./Inputs/input_$(ID).txt >result_$(ID).txt
+	@echo
 
 # Rule to compare output
 test: run
-	$(GRADER) $(RESULT) $(EXPECTED_OUTPUT)
+	@echo
+	@echo Comparing Output...
+	@python3 $(GRADER) result_$(ID).txt ./Outputs/output_$(ID).txt
+	@echo
+
+# 
+test_all: $(TARGET)
+	@echo
+	@for id in $$(seq 0 9); do \
+		echo "Running Test for ID=$$id..."; \
+		./$(TARGET) ./Inputs/input_$$id.txt > result_$$id.txt; \
+		echo "Comparing Output for ID=$$id..."; \
+		python3 $(GRADER) result_$$id.txt ./Outputs/output_$$id.txt; \
+		echo ""; \
+	done
+	@echo
 
 # Clean rule
 clean:
-	rm -f $(TARGET) $(RESULT)
+	@echo
+	@echo Cleaning...
+	@rm -f $(TARGET) result_*.txt;
+	@echo
