@@ -1,5 +1,5 @@
 # Executable name
-TARGET = Lab1
+TARGET = Lab6
 # Python grading script
 GRADER = GradingScript.py
 # Default ID
@@ -13,7 +13,6 @@ $(TARGET): MainTest.cpp
 	@echo
 	@echo Compiling...
 	@g++ -std=c++11 MainTest.cpp -o $(TARGET)
-	@echo
 
 # Rule to run the program
 run: $(TARGET)

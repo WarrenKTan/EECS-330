@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "MyVector.h"
-#include "MyLinkedList.h"
+#include "MyVector_w125t659.h"
+#include "MyLinkedList_w125t659.h"
 
 static const long long uh_param_a = 53;       // universal hash function parameter a
 static const long long uh_param_b = 97;       // universal hash function parameter b
@@ -18,9 +18,12 @@ static const long long mersenne_prime = (1 << prime_digits) - 1;  // the Mersenn
 // fast calculation of (n modulo mersenne_prime)
 long long fastMersenneModulo(const long long n)
 {
-    // code begins
+    long long res = n;
+    while(res >= mersenne_prime){
+        res = (res & mersenne_prime) + (res >> prime_digits);
+    }
 
-    // code ends
+    return res == mersenne_prime ? 0 : res;
 }
 
 // definition of the template hash function class
@@ -117,54 +120,122 @@ class MyHashTable
     // expected to update the private member "primes"
     void preCalPrimes(const size_t n)
     {
-        // code begins
+        // create new array with size n^2
+        size_t limit = n * 2;
+        std::vector<bool> is_prime(limit, true);
+        is_prime[0] = is_prime[1] = false;
 
-        // code ends
+        // check each number until the limit
+        for (size_t i = 2; i * i <= limit; i++){
+            // mark multiples as false
+            if(is_prime[i]){
+                // i^2 is lowest possible uncounted multiple
+                for (size_t j = i * i; j < limit; j += i){
+                    is_prime[j] = false;
+                }
+            }
+        }
+
+        // clear any previously stored primes
+        primes = MyVector<size_t>();
+
+        // convert boolean array to numbers
+        for (size_t i = 2; i <= limit; i++){
+            if (is_prime[i]){
+                primes.push_back(i);
+            }
+        }
+
+        // for (size_t prime : primes){
+        //     std::cout << prime << " ";
+        // }
+        // std::cout << "" << std::endl;
     }
 
     // finding the smallest prime that is larger than or equal to n
     // should perform binary search against the private member "primes"
     size_t nextPrime(const size_t n)
     {
-        // code begins
+        // calculate more primes if necessary
+        if (primes.empty() || primes.back() < n)
+            preCalPrimes(n);
 
-        // code ends
+        // binary search algorithm
+        size_t left = 0;
+        size_t right = primes.size() - 1;
+
+        while (left < right){
+            size_t mid = left + (right - left) / 2;
+            if (primes[mid] < n){
+                left = mid + 1; 
+            }else{
+                right = mid;
+            }
+        }
+
+        return primes[left];
     }
 
     // finds the MyLinkedList itertor that corresponds to the hashed object that has the specified key
     // returns the end() iterator if not found
-    typename MyLinkedList<HashedObj<KeyType, ValueType> >::iterator find(const KeyType& key)
+    typename MyLinkedList<HashedObj<KeyType, ValueType>>::iterator find(const KeyType& key)
     {
-        // code begins
+        size_t index = HashFunc<KeyType>().univHash(key, hash_table.size());
+        auto& list = hash_table[index];
 
-        // code ends
+        for (auto it = list->begin(); it != list->end(); ++it) {
+            if ((*it).key == key) {  // Use *it, which internally calls operator*()
+                return it;
+            }
+        }
+
+        return list->end();
     }
 
     // rehashes all data elements in the hash table into a new hash table with new_size
     // note that the new_size can be either smaller or larger than the existing size
     void rehash(const size_t new_size)
     {
-        // code begins
+        // Create a new table with the correct size and initialize it
+        MyVector<MyLinkedList<HashedObj<KeyType, ValueType>>*> new_table(new_size);
 
-        // code ends
+        // Initialize the new table's linked lists
+        for (size_t i = 0; i < new_size; ++i) {
+            new_table[i] = new MyLinkedList<HashedObj<KeyType, ValueType>>();
+        }
+
+        size_t old_size = theSize;
+
+        // Rehash all elements into the new table
+        for (size_t i = 0; i < hash_table.size(); ++i) {
+            if (hash_table[i]) {
+                for (const auto& item : *hash_table[i]) {
+                    size_t new_index = HashFunc<KeyType>().univHash(item.key, new_size);
+                    new_table[new_index]->push_back(item);
+                }
+                delete hash_table[i];  // Free old memory
+            }
+        }
+
+        // Assign new table and update the size
+        hash_table = std::move(new_table);
+        theSize = old_size;
     }
 
     // doubles the size of the table and perform rehashing
     // the new table size should be the smallest prime that is larger than the expected new table size (double of the old size)
     void doubleTable()
     {
-        size_t new_size = nextPrime(2 * hash_table.size());
+        size_t new_size = nextPrime(2 * hash_table.capacity() + 1);
         this->rehash(new_size);
-        return;
     }
 
     // halves the size of the table and perform rehahsing
     // the new table size should be the smallest prime that is larger than the expected new table size (half of the old size)
     void halveTable()
     {
-        size_t new_size = nextPrime(ceil(hash_table.size() / 2));
+        size_t new_size = nextPrime(ceil(hash_table.capacity() / 2));
         this->rehash(new_size);
-        return;
     }
 
   public:
@@ -172,25 +243,32 @@ class MyHashTable
     // the default constructor; allocate memory if necessary
     explicit MyHashTable(const size_t init_size = 3)
     {
-        // code begins
+        size_t table_size = nextPrime(init_size);
+        hash_table.resize(table_size);
 
-        // code ends
+        theSize = 0;
+
+        for (size_t i = 0; i < table_size; ++i) {
+            hash_table[i] = new MyLinkedList<HashedObj<KeyType, ValueType>>();
+        }
     }
 
     // the default destructor; collect memory if necessary
     ~MyHashTable()
     {
-        // code begins
-
-        // code ends
+        for (size_t i = 0; i < hash_table.size(); ++i) {
+            delete hash_table[i];  // Free each MyLinkedList object
+        }
     }
 
     // checks if the hash tabel contains the given key
     bool contains(const KeyType& key)
     {
-        // code begins
+        auto it = find(key);
+        size_t index = HashFunc<KeyType>().univHash(key, hash_table.size());
+        bool contained = (it != hash_table[index]->end());
 
-        // code ends
+        return contained;
     }
 
     // retrieves the data element that has the specified key
@@ -198,9 +276,15 @@ class MyHashTable
     // return false otherwise
     bool retrieve(const KeyType& key, HashedObj<KeyType, ValueType>& data)
     {
-        // code begins
+        if(contains(key)){
+            // key found; update data and return true
+            auto it = find(key);
+            data = *it;
+            return true;
+        }
 
-        // code ends
+        // key not found; return false
+        return false;
     }
 
     // inserts the given data element into the hash table (copy)
@@ -208,9 +292,20 @@ class MyHashTable
     // return false otherwise
     bool insert(const HashedObj<KeyType, ValueType>& x)
     {
-        // code begins
+        // check redundancy
+        if(contains(x.key))
+            return false;
+        
+        // insert element into hash table
+        size_t index = HashFunc<KeyType>().univHash(x.key, hash_table.size());
+        hash_table[index]->push_back(x);
 
-        // code ends
+        theSize++;
+
+        if(theSize > hash_table.size() * 0.5)
+            doubleTable();
+
+        return true;
     }
 
     // inserts the given data element into the hash table (move)
@@ -218,9 +313,20 @@ class MyHashTable
     // return false otherwise
     bool insert(HashedObj<KeyType, ValueType> && x)
     {
-        // code begins
+        // check redundancy
+        if(contains(x.key))
+            return false;
+        
+        // insert element into hash table
+        size_t index = HashFunc<KeyType>().univHash(x.key, hash_table.size());
+        hash_table[index]->push_back(std::move(x));
 
-        // code ends
+        theSize++;
+
+        if(theSize > hash_table.size() * 0.5)
+            doubleTable();
+
+        return true;
     }
 
     // removes the data element that has the key from the hash table
@@ -228,25 +334,37 @@ class MyHashTable
     // returns false otherwise
     bool remove(const KeyType& key)
     {
-        // code begins
+        // find key's bucket
+        size_t index = HashFunc<KeyType>().univHash(key, hash_table.size());
 
-        // code ends
+        // check if key is in list
+        auto it = find(key);
+        if(it == hash_table[index]->end())
+            // key not found
+            return false;
+
+        // remove key
+        hash_table[index]->erase(it);
+        
+        theSize--;
+
+        if(theSize < hash_table.size() / 8){
+            halveTable();
+        }
+
+        return true;
     }
 
     // returns the number of data elements stored in the hash table
     size_t size()
     {
-        // code begins
-
-        // code ends
+        return theSize;
     }
 
     // returns the capacity of the hash table
     size_t capacity()
     {
-        // code begins
-
-        // code ends
+        return hash_table.capacity();
     }
 
 };

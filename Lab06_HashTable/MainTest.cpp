@@ -3,8 +3,8 @@
 #include <fstream>
 #include <string>
 
-#include "MyVector.h"
-#include "MyHashTable.h"
+#include "MyVector_w125t659.h"
+#include "MyHashTable_w125t659.h"
 
 using namespace std;
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
             int v = stoi(str.substr(tp + 1));
 
             HashedObj<string, int> data(k, v);
-        
+
             bool istag = hash_table.insert(data);
             if(istag)
             {
@@ -46,7 +46,6 @@ int main(int argc, char* argv[])
             }
 
             keys.push_back(k);
-
             
         }
 

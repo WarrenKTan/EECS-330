@@ -1,5 +1,5 @@
 # Executable name
-TARGET = Lab5
+TARGET = Lab2
 # Python grading script
 GRADER = GradingScript.py
 # Default ID
