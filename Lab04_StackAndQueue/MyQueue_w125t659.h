@@ -33,7 +33,6 @@ class MyQueue : private MyVector<DataType>
         }
 
         std::swap(queueData, newQueue);
-        dataStart = 0;
     }
 
   public:
@@ -116,8 +115,18 @@ class MyQueue : private MyVector<DataType>
     // remove the first element from the queue
     void dequeue(void)
     {
-        if (!empty()){
+        if (!empty()) {
             dataStart++;
+            // Optional: shift data back to the front if too much unused space
+            if (dataStart > queueData.size() / 2) {
+                MyVector<DataType> newQueue;
+                for (size_t i = dataStart; i < dataEnd; ++i) {
+                    newQueue.push_back(queueData[i]);
+                }
+                std::swap(queueData, newQueue);
+                dataEnd = dataEnd - dataStart;
+                dataStart = 0;
+            }
         }
     }
 
@@ -136,7 +145,7 @@ class MyQueue : private MyVector<DataType>
     // access the size of the queue
     size_t size() const
     {
-        return queueData.size();
+        return dataEnd - dataStart;
     }
 
     // access the capacity of the queue

@@ -61,7 +61,7 @@ class MyStack : private MyVector<DataType>
     // insert x to the stack
     void push(DataType && x)
     {
-        stackData.push_back(std::move(x));
+        stackData.push_back(x);
     }
 
     // remove the last element from the stack
@@ -93,7 +93,6 @@ class MyStack : private MyVector<DataType>
     {
         return stackData.capacity();
     }
-
 };
 
 
