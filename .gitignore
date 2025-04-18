@@ -1,6 +1,4 @@
 *.zip
 *result*
-output*.txt
-
-# all files with no extension
-[^\.]*
+test_result
+.idea
