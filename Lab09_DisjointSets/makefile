@@ -1,12 +1,13 @@
 # Executable name
-TARGET = Lab10.exe
+TARGET = Lab9.exe
 # Python grading script
 GRADER = GradingScript.py
 # Default ID
-ID ?= 0
+ID ?= Personal
+SIZE ?= 5 5
 
 # Default rule
-all: test
+all: run
 
 # Rule to build the executable
 $(TARGET): MainTest.cpp
@@ -18,7 +19,8 @@ $(TARGET): MainTest.cpp
 run: $(TARGET)
 	@echo
 	@echo Running Program...
-	@./$(TARGET) ./Inputs/input_$(ID).txt >result_$(ID).txt
+	@echo ./$(TARGET) $(SIZE)
+	@./$(TARGET) $(SIZE)
 	@echo
 
 # Rule to compare output
@@ -31,18 +33,18 @@ test: run
 # 
 test_all: $(TARGET)
 	@echo
-	@for id in $$(seq 0 9); do \
-		echo "Running Test for ID=$$id..."; \
-		./$(TARGET) ./Inputs/input_$$id.txt > result_$$id.txt; \
-		echo "Comparing Output for ID=$$id..."; \
-		python3 $(GRADER) result_$$id.txt ./Outputs/output_$$id.txt; \
+	@mkdir -p Results
+	@for sz in "5 5" "5 10" "10 10" "10 15" "15 15" "20 20" "20 40" "30 30" "30 50"; do \
+		echo "Running Test for SIZE=$$sz..."; \
+		./$(TARGET) $$sz >./Results/result_$$(echo $$sz | tr ' ' 'x').txt; \
 		echo ""; \
 	done
 	@echo
+
 
 # Clean rule
 clean:
 	@echo
 	@echo Cleaning...
-	@rm -f $(TARGET) result_*.txt;
+	@rm -f $(TARGET) ./Results/result_*.txt;
 	@echo

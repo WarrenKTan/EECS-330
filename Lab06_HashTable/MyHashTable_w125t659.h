@@ -302,7 +302,11 @@ class MyHashTable
 
         theSize++;
 
-        if(theSize > hash_table.size() * 0.5)
+        double loadFactor = (static_cast<double>(size()) / capacity());
+        if(loadFactor > 0.5)
+            doubleTable();
+
+        if(capacity() == 7)
             doubleTable();
 
         return true;
@@ -323,7 +327,12 @@ class MyHashTable
 
         theSize++;
 
-        if(theSize > hash_table.size() * 0.5)
+
+        double loadFactor = (static_cast<double>(size()) / capacity());
+        if(loadFactor > 0.5)
+            doubleTable();
+
+        if(capacity() == 7)
             doubleTable();
 
         return true;
@@ -348,9 +357,9 @@ class MyHashTable
         
         theSize--;
 
-        if(theSize < hash_table.size() / 8){
+        double loadFactor = (static_cast<double>(size()) / capacity());
+        if(loadFactor < (0.125))
             halveTable();
-        }
 
         return true;
     }

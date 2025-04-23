@@ -1,4 +1,6 @@
 *.zip
 *result*
 test_result
-.idea
+*.exe
+*.xml
+*.json
