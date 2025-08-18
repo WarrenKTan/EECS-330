@@ -1,5 +1,5 @@
 # Executable name
-TARGET = Lab6
+TARGET = Lab10.exe
 # Python grading script
 GRADER = GradingScript.py
 # Default ID
@@ -18,7 +18,7 @@ $(TARGET): MainTest.cpp
 run: $(TARGET)
 	@echo
 	@echo Running Program...
-	@./$(TARGET) ./Inputs/input_$(ID).txt >result_$(ID).txt
+	./$(TARGET) ./Inputs/input_vertex_$(ID).txt ./Inputs/input_edge_$(ID).txt >result_$(ID).txt
 	@echo
 
 # Rule to compare output
@@ -33,7 +33,7 @@ test_all: $(TARGET)
 	@echo
 	@for id in $$(seq 0 9); do \
 		echo "Running Test for ID=$$id..."; \
-		./$(TARGET) ./Inputs/input_$$id.txt > result_$$id.txt; \
+		./$(TARGET) ./Inputs/input_vertex_$$id.txt ./Inputs/input_edge_$$id.txt > result_$$id.txt; \
 		echo "Comparing Output for ID=$$id..."; \
 		python3 $(GRADER) result_$$id.txt ./Outputs/output_$$id.txt; \
 		echo ""; \
